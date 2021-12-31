@@ -1,29 +1,33 @@
-
-const { Agent } = require('http');
 const request = require('request');
 
 const args = process.argv.slice(2);
 
+// const callback = function (error,description)  {
+//   if (error) {
+//     console.log("false", error);
+// } else {
+//     console.log (description);
+//   }
+// };
+
 //// breed name is entered via command line agurment
-const fetchBreedDescription = function (x) {
-    request(`https://api.thecatapi.com/v1/breeds/search?q=${x}`, (error,response,body) => {
-    //const data = JSON.parse(body);
-    // console.log(data.length === 0)
-    //in case page not found
-      if (body === undefined){
-      return console.log('request failed');}
-    const data = JSON.parse(body)
-    if (data.length === 0) {/// in case request failed, example wrong domain
-        return console.log('page not found');
+const fetchBreedDescription = function (breedName, callback) {
+  request(`https://api.thecatapi.com/v1/breeds/search?q=${breedName}`, (error,response,body) => {
+    if (error) {
+      return callback(error,null);
+    }
+
+    let data = JSON.parse(body)
+    let breed = data[0]
+    if(breed) {
+      return callback(null,breed["description"])
     } else {
-        const fs = require('fs'); //this function to read data returned from thecatapi
-        fs.readFile(body, () => {
-      // console.log(`${body}`);
-      // console.log(typeof body)
-        console.log(data[0]["description"]);
-        });
-      };
-    });
+        return callback('page not found',null);
+      }
+  });
   }
 
-  fetchBreedDescription(args[0])
+module.exports = {fetchBreedDescription}
+
+
+
